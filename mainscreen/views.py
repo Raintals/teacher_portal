@@ -9,6 +9,7 @@ from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib import messages
 from mainscreen.forms import TeacherSignupForm, EditProfileForm
 from mainscreen.models import Student
 import json
@@ -50,12 +51,8 @@ class TeacherEditProfileView(LoginRequiredMixin, FormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         user_id = self.kwargs.get("user_id")
-        # Optionally verify that the current user is allowed to update this profile.
-        if self.request.user.pk != user_id:
-            # If not, default to the current user.
-            kwargs['instance'] = self.request.user
-        else:
-            kwargs['instance'] = self.request.user
+        # Use current user if not matching
+        kwargs['instance'] = self.request.user
         return kwargs
     
     def get_success_url(self):
@@ -63,10 +60,11 @@ class TeacherEditProfileView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         user = form.save(commit=False)
-        # If desired, add logic to update password only when provided.
+        # Update password if provided (optional)
         if form.cleaned_data.get('password'):
             user.password = make_password(form.cleaned_data['password'])
         user.save()
+        messages.success(self.request, "Your profile has been updated successfully.")
         return super().form_valid(form)
 
 class Dashboard(LoginRequiredMixin, TemplateView):
