@@ -78,7 +78,7 @@ def add_student(request):
 
         try:
             student = Student.objects.get(name=name, subject=subject)
-            student.marks += new_marks
+            student.marks = new_marks
             student.save()
             action = 'updated'
         except Student.DoesNotExist:

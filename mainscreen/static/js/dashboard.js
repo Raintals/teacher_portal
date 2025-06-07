@@ -25,12 +25,12 @@ document.getElementById('modal-save-btn').addEventListener('click', function() {
 
     // Validation for update modal
     if (!name || !subject || !marksStr) {
-        alert("Please fill in all the fields.");
+        showAlert("Please fill in all the fields.");
         return;
     }
     const marks = Number(marksStr);
     if (isNaN(marks) || marks < 0 || marks > 100) {
-        alert("Marks must be a number between 0 and 100.");
+        showAlert("Marks must be a number between 0 and 100.");
         return;
     }
 
@@ -50,12 +50,12 @@ document.getElementById('modal-save-btn').addEventListener('click', function() {
             row.querySelector('[data-field="name"]').innerText = name;
             row.querySelector('[data-field="subject"]').innerText = subject;
             row.querySelector('[data-field="marks"]').innerText = marks;
-            alert('Student updated!');
+            showAlert('Student updated!');
             var modalElement = document.getElementById('updateModal');
             var modalInstance = bootstrap.Modal.getInstance(modalElement);
             modalInstance.hide();
         } else {
-            alert('Update failed');
+            showAlert('Update failed');
         }
     });
 });
@@ -73,12 +73,12 @@ document.getElementById('modal-add-btn').addEventListener('click', function() {
 
     // Validation for add modal
     if (!name || !subject || !marksStr) {
-        alert("Please fill in all the fields.");
+        showAlert("Please fill in all the fields.");
         return;
     }
     const marks = Number(marksStr);
     if (isNaN(marks) || marks < 0 || marks > 100) {
-        alert("Marks must be a number between 0 and 100.");
+        showAlert("Marks must be a number between 0 and 100.");
         return;
     }
 
@@ -143,20 +143,19 @@ document.getElementById('modal-add-btn').addEventListener('click', function() {
                             if (data.status === 'deleted') {
                                 row.remove();
                             } else {
-                                // You can also show a custom error notification here.
-                                // For example, display a Bootstrap toast or modal.
-                                alert('Deletion failed');
+                                showAlert('Deletion failed');
                             }
                         });
                     });
                 });
             }
-            alert(`Student ${data.action} successfully!`);
-            var modalElement = document.getElementById('addModal');
-            var modalInstance = bootstrap.Modal.getInstance(modalElement);
-            modalInstance.hide();
+            showAlert(`Student ${data.action} successfully!`).then(() => {
+                var modalElement = document.getElementById('addModal');
+                var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                modalInstance.hide();
+            });
         } else {
-            alert('Operation failed');
+            showAlert('Operation failed');
         }
     });
 });
@@ -177,10 +176,9 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
             .then(data => {
                 if (data.status === 'deleted') {
                     row.remove();
+                    showAlert('Student deleted successfully');
                 } else {
-                    // You can also show a custom error notification here.
-                    // For example, display a Bootstrap toast or modal.
-                    alert('Deletion failed');
+                    showAlert('Deletion failed');
                 }
             });
         });
@@ -223,5 +221,23 @@ function showConfirm(message) {
 
         confirmBtn.addEventListener('click', onConfirm);
         cancelBtn.addEventListener('click', onCancel);
+    });
+}
+
+/**
+ * showAlert returns a Promise that displays an alert message 
+ * in a custom modal and auto-hides it after 2 seconds.
+ */
+function showAlert(message) {
+    return new Promise(resolve => {
+        const alertModalEl = document.getElementById('alertModal');
+        alertModalEl.querySelector('.modal-body').innerText = message;
+        const alertModal = new bootstrap.Modal(alertModalEl);
+        alertModal.show();
+        // Auto-hide after 2 seconds then resolve
+        setTimeout(() => {
+            alertModal.hide();
+            resolve();
+        }, 2000);
     });
 }
