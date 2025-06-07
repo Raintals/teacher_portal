@@ -130,22 +130,24 @@ document.getElementById('modal-add-btn').addEventListener('click', function() {
                 newRow.querySelector('.delete-btn').addEventListener('click', function () {
                     const row = this.closest('tr');
                     const studentId = row.dataset.id;
-                    if (!confirm("Are you sure you want to delete this student?")) {
-                        return;
-                    }
-                    fetch(`/delete-student/${studentId}/`, {
-                        method: "POST",
-                        headers: {
-                            "X-CSRFToken": "{{ csrf_token }}"
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'deleted') {
-                            row.remove();
-                        } else {
-                            alert('Deletion failed');
-                        }
+                    showConfirm("Do you really want to remove this student permanently?").then(confirmed => {
+                        if (!confirmed) return;
+                        fetch(`/delete-student/${studentId}/`, {
+                            method: "POST",
+                            headers: {
+                                "X-CSRFToken": "{{ csrf_token }}"
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'deleted') {
+                                row.remove();
+                            } else {
+                                // You can also show a custom error notification here.
+                                // For example, display a Bootstrap toast or modal.
+                                alert('Deletion failed');
+                            }
+                        });
                     });
                 });
             }
@@ -163,22 +165,63 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         const row = this.closest('tr');
         const studentId = row.dataset.id;
-        if (!confirm("Are you sure you want to delete this student?")) {
-            return;
-        }
-        fetch(`/delete-student/${studentId}/`, {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}"
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'deleted') {
-                row.remove();
-            } else {
-                alert('Deletion failed');
-            }
+        showConfirm("Do you really want to remove this student permanently?").then(confirmed => {
+            if (!confirmed) return;
+            fetch(`/delete-student/${studentId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'deleted') {
+                    row.remove();
+                } else {
+                    // You can also show a custom error notification here.
+                    // For example, display a Bootstrap toast or modal.
+                    alert('Deletion failed');
+                }
+            });
         });
     });
 });
+
+/**
+ * showConfirm returns a Promise that resolves true if the user confirms
+ * or false if they cancel.
+ */
+function showConfirm(message) {
+    return new Promise((resolve) => {
+        // Set the message in the modal body.
+        const confirmModalEl = document.getElementById('confirmModal');
+        confirmModalEl.querySelector('.modal-body').innerText = message;
+        const confirmModal = new bootstrap.Modal(confirmModalEl);
+        confirmModal.show();
+
+        // When the user clicks "Proceed" or "Cancel"
+        const confirmBtn = document.getElementById('confirm-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        // Create handler functions
+        const onConfirm = () => {
+            confirmModal.hide();
+            cleanup();
+            resolve(true);
+        };
+        const onCancel = () => {
+            confirmModal.hide();
+            cleanup();
+            resolve(false);
+        };
+
+        // Clean up event listeners after a decision is made.
+        function cleanup() {
+            confirmBtn.removeEventListener('click', onConfirm);
+            cancelBtn.removeEventListener('click', onCancel);
+        }
+
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+    });
+}
