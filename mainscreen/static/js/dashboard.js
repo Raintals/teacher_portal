@@ -23,7 +23,6 @@ document.getElementById('modal-save-btn').addEventListener('click', function() {
     const subject = document.getElementById('student-subject').value.trim();
     const marksStr = document.getElementById('student-marks').value.trim();
 
-    // Validation for update modal
     if (!name || !subject || !marksStr) {
         showAlert("Please fill in all the fields.");
         return;
@@ -34,7 +33,6 @@ document.getElementById('modal-save-btn').addEventListener('click', function() {
         return;
     }
 
-    // Use updateStudentUrl for updating a student
     fetch(updateStudentUrl, {
         method: "POST",
         headers: {
@@ -71,7 +69,6 @@ document.getElementById('modal-add-btn').addEventListener('click', function() {
     const subject = document.getElementById('add-student-subject').value.trim();
     const marksStr = document.getElementById('add-student-marks').value.trim();
 
-    // Validation for add modal
     if (!name || !subject || !marksStr) {
         showAlert("Please fill in all the fields.");
         return;
@@ -82,7 +79,6 @@ document.getElementById('modal-add-btn').addEventListener('click', function() {
         return;
     }
 
-    // Use addStudentUrl for adding a new student
     fetch(addStudentUrl, {
         method: "POST",
         headers: {
@@ -94,13 +90,10 @@ document.getElementById('modal-add-btn').addEventListener('click', function() {
     .then(res => res.json())
     .then(data => {
         if (data.status === 'success') {
-            // If student exists and is updated, find the row and update marks; else, add new row.
             let row = document.querySelector(`tr[data-id="${data.id}"]`);
             if (row) {
-                // update existing row
                 row.querySelector('[data-field="marks"]').innerText = data.marks;
             } else {
-                // insert new row at the end
                 const newRow = document.createElement('tr');
                 newRow.setAttribute('data-id', data.id);
                 newRow.innerHTML = `
@@ -113,7 +106,6 @@ document.getElementById('modal-add-btn').addEventListener('click', function() {
                     </td>
                 `;
                 document.querySelector('#students-table tbody').appendChild(newRow);
-                // Add event listeners for newly added buttons
                 newRow.querySelector('.save-btn').addEventListener('click', function () {
                     const row = this.closest('tr');
                     const id = row.dataset.id;
@@ -185,23 +177,17 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
     });
 });
 
-/**
- * showConfirm returns a Promise that resolves true if the user confirms
- * or false if they cancel.
- */
+
 function showConfirm(message) {
     return new Promise((resolve) => {
-        // Set the message in the modal body.
         const confirmModalEl = document.getElementById('confirmModal');
         confirmModalEl.querySelector('.modal-body').innerText = message;
         const confirmModal = new bootstrap.Modal(confirmModalEl);
         confirmModal.show();
 
-        // When the user clicks "Proceed" or "Cancel"
         const confirmBtn = document.getElementById('confirm-btn');
         const cancelBtn = document.getElementById('cancel-btn');
 
-        // Create handler functions
         const onConfirm = () => {
             confirmModal.hide();
             cleanup();
@@ -213,7 +199,6 @@ function showConfirm(message) {
             resolve(false);
         };
 
-        // Clean up event listeners after a decision is made.
         function cleanup() {
             confirmBtn.removeEventListener('click', onConfirm);
             cancelBtn.removeEventListener('click', onCancel);
@@ -224,17 +209,12 @@ function showConfirm(message) {
     });
 }
 
-/**
- * showAlert returns a Promise that displays an alert message 
- * in a custom modal and auto-hides it after 2 seconds.
- */
 function showAlert(message) {
     return new Promise(resolve => {
         const alertModalEl = document.getElementById('alertModal');
         alertModalEl.querySelector('.modal-body').innerText = message;
         const alertModal = new bootstrap.Modal(alertModalEl);
         alertModal.show();
-        // Auto-hide after 2 seconds then resolve
         setTimeout(() => {
             alertModal.hide();
             resolve();

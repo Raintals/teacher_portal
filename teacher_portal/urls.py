@@ -19,5 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(('mainscreen.urls', 'mainscreen'), namespace='mainscreen')), # Include the teachers app URLs
+    path('', include(('mainscreen.urls', 'mainscreen'), namespace='mainscreen')),
 ]

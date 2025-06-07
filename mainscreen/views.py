@@ -10,7 +10,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib import messages
-from mainscreen.forms import TeacherSignupForm, EditProfileForm
+from django.contrib.auth.models import User
+from mainscreen.forms import TeacherSignupForm, EditProfileForm, ResetPasswordForm
 from mainscreen.models import Student
 import json
 
@@ -31,6 +32,7 @@ class TeacherLoginView(LoginView):
     def get_success_url(self):
         return reverse_lazy('mainscreen:home')
 
+
 class TeacherSignupView(FormView):
     template_name = 'mainscreen/signup.html'
     form_class = TeacherSignupForm
@@ -42,6 +44,7 @@ class TeacherSignupView(FormView):
         user.password = make_password(form.cleaned_data['password'])
         user.save()
         return super().form_valid(form)
+
 
 class TeacherEditProfileView(LoginRequiredMixin, FormView):
     template_name = 'mainscreen/edit_profile.html'
@@ -67,6 +70,27 @@ class TeacherEditProfileView(LoginRequiredMixin, FormView):
         messages.success(self.request, "Your profile has been updated successfully.")
         return super().form_valid(form)
 
+
+class TeacherResetPasswordView(FormView):
+    template_name = 'mainscreen/reset_password.html'
+    form_class = ResetPasswordForm
+    success_url = reverse_lazy('mainscreen:reset_password')
+
+    def form_valid(self, form):
+        username = form.cleaned_data.get('username')
+        email = form.cleaned_data.get('email')
+        try:
+            user = User.objects.get(username=username, email=email)
+        except User.DoesNotExist:
+            form.add_error(None, "No user found with the provided username and email.")
+            return self.form_invalid(form)
+        new_password = form.cleaned_data.get('new_password')
+        user.password = make_password(new_password)  # Hash the new password    
+        user.save()
+        messages.success(self.request, f"Your password has been reset successfully. Please log in with your new password.")
+        return super().form_valid(form)
+
+
 class Dashboard(LoginRequiredMixin, TemplateView):
     template_name = 'mainscreen/dashboard.html'
 
@@ -75,8 +99,10 @@ class Dashboard(LoginRequiredMixin, TemplateView):
         context['students'] = Student.objects.all()
         return context
 
+
 class TeacherLogoutView(LogoutView):
     next_page = reverse_lazy('mainscreen:login')  # Redirect to login page after logout
+
 
 @csrf_exempt
 def update_student(request):
@@ -89,6 +115,7 @@ def update_student(request):
         student.save()
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'failed'}, status=400)
+
 
 @csrf_exempt
 def add_student(request):
@@ -118,6 +145,7 @@ def add_student(request):
             'marks': student.marks
         })
     return JsonResponse({'status': 'failed'}, status=400)
+
 
 @csrf_exempt
 def delete_student(request, student_id):
