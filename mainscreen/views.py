@@ -36,7 +36,7 @@ class TeacherLoginView(LoginView):
 class TeacherSignupView(FormView):
     template_name = 'mainscreen/signup.html'
     form_class = TeacherSignupForm
-    success_url = reverse_lazy('mainscreen:login')
+    success_url = reverse_lazy('mainscreen:home')
     
     def form_valid(self, form):
         user = form.save(commit=False)
@@ -150,7 +150,7 @@ def add_student(request):
 @csrf_exempt
 def delete_student(request, student_id):
     if request.method == 'POST':
-        Student.objects.filter(id=student_id)
+        Student.objects.filter(id=student_id).delete()
         print(f"Deleting student with ID: {student_id}")
         return JsonResponse({'status': 'deleted'})
     return JsonResponse({'status': 'failed'}, status=400)
