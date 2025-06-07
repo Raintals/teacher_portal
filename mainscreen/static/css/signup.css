@@ -1,0 +1,28 @@
+.signup-card {
+    max-width: 400px;
+    margin: 80px auto;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.signup-card .card-header {
+    background-color: #28a745;
+    color: #fff;
+    font-size: 1.5rem;
+    text-align: center;
+    padding: 20px;
+}
+.signup-card .card-body {
+    padding: 30px;
+}
+.signup-card .form-control {
+    border-radius: 4px;
+}
+.signup-card .btn-primary {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.1rem;
+}
+.signup-card .helper-links p {
+    margin: 0;
+}

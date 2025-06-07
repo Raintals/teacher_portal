@@ -1,0 +1,29 @@
+/* Inline styles to enhance the UI */
+.login-card {
+    max-width: 400px;
+    margin: 80px auto;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.login-card .card-header {
+    background-color: #007bff;
+    color: #fff;
+    font-size: 1.5rem;
+    text-align: center;
+    padding: 20px;
+}
+.login-card .card-body {
+    padding: 30px;
+}
+.login-card .form-control {
+    border-radius: 4px;
+}
+.login-card .btn-primary {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.1rem;
+}
+.login-card .helper-links p {
+    margin: 0;
+}

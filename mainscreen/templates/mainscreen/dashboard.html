@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Student Listing</h2>
+        <button class="btn btn-success" id="add-student-btn">Add New Student</button>
+    </div>
+    <table class="table table-bordered" id="students-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Subject</th>
+                <th>Marks</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for student in students %}
+            <tr data-id="{{ student.id }}">
+                <td contenteditable="false" class="editable" data-field="name">{{ student.name }}</td>
+                <td contenteditable="false" class="editable" data-field="subject">{{ student.subject }}</td>
+                <td contenteditable="false" class="editable" data-field="marks">{{ student.marks }}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary save-btn">Update</button>
+                    <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal for updating student (existing) -->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateModalLabel">Update Student</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="update-form">
+          <input type="hidden" id="student-id" />
+          <div class="mb-3">
+            <label for="student-name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="student-name" required />
+          </div>
+          <div class="mb-3">
+            <label for="student-subject" class="form-label">Subject</label>
+            <input type="text" class="form-control" id="student-subject" required />
+          </div>
+          <div class="mb-3">
+            <label for="student-marks" class="form-label">Marks</label>
+            <input type="number" class="form-control" id="student-marks" required />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="modal-save-btn">Update</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for adding new student -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addModalLabel">Add New Student</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-form">
+          <div class="mb-3">
+            <label for="add-student-name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="add-student-name" required />
+          </div>
+          <div class="mb-3">
+            <label for="add-student-subject" class="form-label">Subject</label>
+            <input type="text" class="form-control" id="add-student-subject" required />
+          </div>
+          <div class="mb-3">
+            <label for="add-student-marks" class="form-label">Marks</label>
+            <input type="number" class="form-control" id="add-student-marks" required />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success" id="modal-add-btn">Add Student</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const row = this.closest('tr');
+        const id = row.dataset.id;
+        const name = row.querySelector('[data-field="name"]').innerText.trim();
+        const subject = row.querySelector('[data-field="subject"]').innerText.trim();
+        const marks = row.querySelector('[data-field="marks"]').innerText.trim();
+
+        // Pre-populate modal fields for update
+        document.getElementById('student-id').value = id;
+        document.getElementById('student-name').value = name;
+        document.getElementById('student-subject').value = subject;
+        document.getElementById('student-marks').value = marks;
+
+        var updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+        updateModal.show();
+    });
+});
+
+document.getElementById('modal-save-btn').addEventListener('click', function() {
+    const id = document.getElementById('student-id').value;
+    const name = document.getElementById('student-name').value.trim();
+    const subject = document.getElementById('student-subject').value.trim();
+    const marks = document.getElementById('student-marks').value.trim();
+
+    fetch("{% url 'mainscreen:update_student' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ id, name, subject, marks })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            row.querySelector('[data-field="name"]').innerText = name;
+            row.querySelector('[data-field="subject"]').innerText = subject;
+            row.querySelector('[data-field="marks"]').innerText = marks;
+            alert('Student updated!');
+            var modalElement = document.getElementById('updateModal');
+            var modalInstance = bootstrap.Modal.getInstance(modalElement);
+            modalInstance.hide();
+        } else {
+            alert('Update failed');
+        }
+    });
+});
+
+document.getElementById('add-student-btn').addEventListener('click', function() {
+    var addModal = new bootstrap.Modal(document.getElementById('addModal'));
+    document.getElementById('add-form').reset();
+    addModal.show();
+});
+
+document.getElementById('modal-add-btn').addEventListener('click', function() {
+    const name = document.getElementById('add-student-name').value.trim();
+    const subject = document.getElementById('add-student-subject').value.trim();
+    const marks = document.getElementById('add-student-marks').value.trim();
+
+    fetch("{% url 'mainscreen:add_student' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ name, subject, marks })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // If student exists and is updated, find the row and update marks; else, add new row.
+            let row = document.querySelector(`tr[data-id="${data.id}"]`);
+            if (row) {
+                // update existing row
+                row.querySelector('[data-field="marks"]').innerText = data.marks;
+            } else {
+                // insert new row at the end
+                const newRow = document.createElement('tr');
+                newRow.setAttribute('data-id', data.id);
+                newRow.innerHTML = `
+                    <td contenteditable="false" class="editable" data-field="name">${data.name}</td>
+                    <td contenteditable="false" class="editable" data-field="subject">${data.subject}</td>
+                    <td contenteditable="false" class="editable" data-field="marks">${data.marks}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary save-btn">Update</button>
+                        <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+                    </td>
+                `;
+                document.querySelector('#students-table tbody').appendChild(newRow);
+                // Add event listeners for newly added buttons
+                newRow.querySelector('.save-btn').addEventListener('click', function () {
+                    const row = this.closest('tr');
+                    const id = row.dataset.id;
+                    const name = row.querySelector('[data-field="name"]').innerText.trim();
+                    const subject = row.querySelector('[data-field="subject"]').innerText.trim();
+                    const marks = row.querySelector('[data-field="marks"]').innerText.trim();
+                    document.getElementById('student-id').value = id;
+                    document.getElementById('student-name').value = name;
+                    document.getElementById('student-subject').value = subject;
+                    document.getElementById('student-marks').value = marks;
+                    var updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+                    updateModal.show();
+                });
+                newRow.querySelector('.delete-btn').addEventListener('click', function () {
+                    const row = this.closest('tr');
+                    const studentId = row.dataset.id;
+                    fetch(`/delete-student/${studentId}/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'deleted') {
+                            row.remove();
+                        } else {
+                            alert('Deletion failed');
+                        }
+                    });
+                });
+            }
+            alert(`Student ${data.action} successfully!`);
+            var modalElement = document.getElementById('addModal');
+            var modalInstance = bootstrap.Modal.getInstance(modalElement);
+            modalInstance.hide();
+        } else {
+            alert('Operation failed');
+        }
+    });
+});
+
+document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const row = this.closest('tr');
+        const studentId = row.dataset.id;
+        fetch(`/delete-student/${studentId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'deleted') {
+                row.remove();
+            } else {
+                alert('Deletion failed');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+{% comment %} <form method="post" action="{% url 'mainscreen:logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Logout</button>
+</form> {% endcomment %}
