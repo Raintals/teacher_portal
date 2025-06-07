@@ -9,7 +9,7 @@ from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from mainscreen.forms import TeacherSignupForm
+from mainscreen.forms import TeacherSignupForm, EditProfileForm
 from mainscreen.models import Student
 import json
 
@@ -39,6 +39,33 @@ class TeacherSignupView(FormView):
         user = form.save(commit=False)
         # Hash the password before saving
         user.password = make_password(form.cleaned_data['password'])
+        user.save()
+        return super().form_valid(form)
+
+class TeacherEditProfileView(LoginRequiredMixin, FormView):
+    template_name = 'mainscreen/edit_profile.html'
+    form_class = EditProfileForm
+    login_url = reverse_lazy('mainscreen:login')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        user_id = self.kwargs.get("user_id")
+        # Optionally verify that the current user is allowed to update this profile.
+        if self.request.user.pk != user_id:
+            # If not, default to the current user.
+            kwargs['instance'] = self.request.user
+        else:
+            kwargs['instance'] = self.request.user
+        return kwargs
+    
+    def get_success_url(self):
+        return reverse_lazy('mainscreen:edit_profile', args=[self.request.user.pk])
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        # If desired, add logic to update password only when provided.
+        if form.cleaned_data.get('password'):
+            user.password = make_password(form.cleaned_data['password'])
         user.save()
         return super().form_valid(form)
 
