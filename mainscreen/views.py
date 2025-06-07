@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth import login
 from mainscreen.forms import TeacherSignupForm, EditProfileForm, ResetPasswordForm
 from mainscreen.models import Student
 import json
@@ -43,6 +44,7 @@ class TeacherSignupView(FormView):
         # Hash the password before saving
         user.password = make_password(form.cleaned_data['password'])
         user.save()
+        login(self.request, user)  # Log the user in after signup
         return super().form_valid(form)
 
 
