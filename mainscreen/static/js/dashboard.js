@@ -21,7 +21,18 @@ document.getElementById('modal-save-btn').addEventListener('click', function() {
     const id = document.getElementById('student-id').value;
     const name = document.getElementById('student-name').value.trim();
     const subject = document.getElementById('student-subject').value.trim();
-    const marks = document.getElementById('student-marks').value.trim();
+    const marksStr = document.getElementById('student-marks').value.trim();
+
+    // Validation for update modal
+    if (!name || !subject || !marksStr) {
+        alert("Please fill in all the fields.");
+        return;
+    }
+    const marks = Number(marksStr);
+    if (isNaN(marks) || marks < 0 || marks > 100) {
+        alert("Marks must be a number between 0 and 100.");
+        return;
+    }
 
     // Use updateStudentUrl for updating a student
     fetch(updateStudentUrl, {
@@ -58,7 +69,18 @@ document.getElementById('add-student-btn').addEventListener('click', function() 
 document.getElementById('modal-add-btn').addEventListener('click', function() {
     const name = document.getElementById('add-student-name').value.trim();
     const subject = document.getElementById('add-student-subject').value.trim();
-    const marks = document.getElementById('add-student-marks').value.trim();
+    const marksStr = document.getElementById('add-student-marks').value.trim();
+
+    // Validation for add modal
+    if (!name || !subject || !marksStr) {
+        alert("Please fill in all the fields.");
+        return;
+    }
+    const marks = Number(marksStr);
+    if (isNaN(marks) || marks < 0 || marks > 100) {
+        alert("Marks must be a number between 0 and 100.");
+        return;
+    }
 
     // Use addStudentUrl for adding a new student
     fetch(addStudentUrl, {
@@ -108,6 +130,9 @@ document.getElementById('modal-add-btn').addEventListener('click', function() {
                 newRow.querySelector('.delete-btn').addEventListener('click', function () {
                     const row = this.closest('tr');
                     const studentId = row.dataset.id;
+                    if (!confirm("Are you sure you want to delete this student?")) {
+                        return;
+                    }
                     fetch(`/delete-student/${studentId}/`, {
                         method: "POST",
                         headers: {
@@ -138,6 +163,9 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         const row = this.closest('tr');
         const studentId = row.dataset.id;
+        if (!confirm("Are you sure you want to delete this student?")) {
+            return;
+        }
         fetch(`/delete-student/${studentId}/`, {
             method: "POST",
             headers: {
