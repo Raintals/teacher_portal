@@ -28,8 +28,8 @@ document.getElementById('modal-save-btn').addEventListener('click', function() {
         return;
     }
     const marks = Number(marksStr);
-    if (isNaN(marks) || marks < 0 || marks > 100) {
-        showAlert("Marks must be a number between 0 and 100.");
+    if (isNaN(marks)) {
+        showAlert("Marks must be a valid number.");
         return;
     }
 
@@ -45,9 +45,10 @@ document.getElementById('modal-save-btn').addEventListener('click', function() {
     .then(data => {
         if (data.status === 'success') {
             const row = document.querySelector(`tr[data-id="${id}"]`);
-            row.querySelector('[data-field="name"]').innerText = name;
-            row.querySelector('[data-field="subject"]').innerText = subject;
-            row.querySelector('[data-field="marks"]').innerText = marks;
+            row.querySelector('[data-field="name"]').innerText = data.name;
+            row.querySelector('[data-field="subject"]').innerText = data.subject;
+            // Use the updated marks from the response
+            row.querySelector('[data-field="marks"]').innerText = data.marks;
             showAlert('Student updated!');
             var modalElement = document.getElementById('updateModal');
             var modalInstance = bootstrap.Modal.getInstance(modalElement);
@@ -74,8 +75,8 @@ document.getElementById('modal-add-btn').addEventListener('click', function() {
         return;
     }
     const marks = Number(marksStr);
-    if (isNaN(marks) || marks < 0 || marks > 100) {
-        showAlert("Marks must be a number between 0 and 100.");
+    if (isNaN(marks)) {
+        showAlert("Marks must be a valid number.");
         return;
     }
 

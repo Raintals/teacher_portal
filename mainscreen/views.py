@@ -113,9 +113,12 @@ def update_student(request):
         student = Student.objects.get(id=data['id'])
         student.name = data['name']
         student.subject = data['subject']
-        student.marks = data['marks']
+        student.marks += data['marks']
         student.save()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'success',
+                             'name': student.name,
+                             'subject': student.subject,
+                              'marks': student.marks})
     return JsonResponse({'status': 'failed'}, status=400)
 
 
@@ -132,7 +135,7 @@ def add_student(request):
 
         try:
             student = Student.objects.get(name=name, subject=subject)
-            student.marks = new_marks
+            student.marks += new_marks
             student.save()
             action = 'updated'
         except Student.DoesNotExist:
